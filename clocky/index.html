@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Zeiterfassung</title>
+    <script>
+        let zeiterfassungen = [];
+        let auftraggeberList = [];
+        let auftragnehmerList = [];
+        let mitarbeiterList = [];
+
+        function calculateWage(index) {
+            const gehaltsgruppe = document.getElementById(`gehaltsgruppe_${index}`).value;
+            const startTime = document.getElementById(`zeitAnfang_${index}`).value;
+            const endTime = document.getElementById(`zeitEnde_${index}`).value;
+
+            // Calculate hours worked
+            const start = new Date(`1970-01-01T${startTime}:00`);
+            const end = new Date(`1970-01-01T${endTime}:00`);
+            const hoursWorked = (end - start) / (1000 * 60 * 60);
+
+            let hourlyRate = 0;
+            if (gehaltsgruppe == 1) hourlyRate = 17.00;
+            else if (gehaltsgruppe == 2) hourlyRate = 19.50;
+            else if (gehaltsgruppe == 3) hourlyRate = 23.75;
+
+            const wage = hoursWorked * hourlyRate;
+            document.getElementById(`lohn_${index}`).value = wage.toFixed(2);
+        }
+
+        function addZeiterfassung() {
+            const index = zeiterfassungen.length;
+            zeiterfassungen.push({}); // Add a new entry
+
+            const form = document.getElementById('zeiterfassungen');
+            const newEntry = `
+                <div id="zeiterfassung_${index}">
+                    <h3>Zeiterfassung ${index + 1}</h3>
+                    <label for="auftraggeber_${index}">Auftraggeber:</label>
+                    <select id="auftraggeber_${index}">
+                        ${auftraggeberList.map(auftraggeber => `<option value="${auftraggeber}">${auftraggeber}</option>`).join('')}
+                    </select>
+                    <button type="button" onclick="addAuftraggeber()">Neuen Auftraggeber hinzufügen</button><br>
+
+                    <label for="einsatzort_${index}">Einsatzort:</label>
+                    <input type="text" id="einsatzort_${index}"><br>
+
+                    <label for="auftragnehmer_${index}">Auftragnehmer:</label>
+                    <select id="auftragnehmer_${index}">
+                        ${auftragnehmerList.map(auftragnehmer => `<option value="${auftragnehmer}">${auftragnehmer}</option>`).join('')}
+                    </select>
+                    <button type="button" onclick="addAuftragnehmer()">Neuen Auftragnehmer hinzufügen</button><br>
+
+                    <label for="mitarbeiter_${index}">Mitarbeiter:</label>
+                    <select id="mitarbeiter_${index}">
+                        ${mitarbeiterList.map(mitarbeiter => `<option value="${mitarbeiter}">${mitarbeiter}</option>`).join('')}
+                    </select>
+                    <button type="button" onclick="addMitarbeiter()">Neuen Mitarbeiter hinzufügen</button><br>
+
+                    <label for="datum_${index}">Datum:</label>
+                    <input type="date" id="datum_${index}"><br>
+
+                    <label for="zeitAnfang_${index}">Zeit Anfang:</label>
+                    <input type="time" id="zeitAnfang_${index}" onchange="calculateWage(${index})"><br>
+
+                    <label for="zeitEnde_${index}">Zeit Ende:</label>
+                    <input type="time" id="zeitEnde_${index}" onchange="calculateWage(${index})"><br>
+
+                    <label for="gehaltsgruppe_${index}">Gehaltsgruppe:</label>
+                    <select id="gehaltsgruppe_${index}" onchange="calculateWage(${index})">
+                        <option value="1">Gruppe 1</option>
+                        <option value="2">Gruppe 2</option>
+                        <option value="3">Gruppe 3</option>
+                    </select><br>
+
+                    <label for="lohn_${index}">Lohn:</label>
+                    <input type="text" id="lohn_${index}" readonly><br>
+ 
+
+                    <label for="unterschrift_${index}">Unterschrift:</label>
+                    <input type="text" id="unterschrift_${index}"><br>
+
+                    <button type="button" onclick="removeZeiterfassung(${index})">Zeiterfassung entfernen</button>
+                </div>
+            `;
+            form.insertAdjacentHTML('beforeend', newEntry);
+        }
+
+        function removeZeiterfassung(index) {
+            const entry = document.getElementById(`zeiterfassung_${index}`);
+            if (entry) {
+                entry.remove();
+                zeiterfassungen.splice(index, 1); // Remove the entry from the array
+                // Reindex the remaining entries
+                zeiterfassungen.forEach((_, i) => {
+                    const newId = `zeiterfassung_${i}`;
+                    const currentEntry = document.getElementById(`zeiterfassung_${i + 1}`);
+                    if (currentEntry) {
+                        currentEntry.id = newId;
+                        currentEntry.querySelector(`h3`).innerText = `Zeiterfassung ${i + 1}`;
+                        // Update all relevant IDs in the current entry
+                        ['auftraggeber', 'einsatzort', 'auftragnehmer', 'mitarbeiter', 'datum', 'zeitAnfang', 'zeitEnde', 'gehaltsgruppe', 'lohn', 'unterschrift'].forEach(field => {
+                            const element = currentEntry.querySelector(`#${field}_${i + 1}`);
+                            if (element) {
+                                element.id = `${field}_${i}`;
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        function addAuftraggeber() {
+            const newAuftraggeber = prompt("Bitte neuen Auftraggeber eingeben:");
+            if (newAuftraggeber) {
+                auftraggeberList.push(newAuftraggeber);
+                updateAuftraggeberOptions();
+            }
+        }
+
+        function addAuftragnehmer() {
+            const newAuftragnehmer = prompt("Bitte neuen Auftragnehmer eingeben:");
+            if (newAuftragnehmer) {
+                auftragnehmerList.push(newAuftragnehmer);
+                updateAuftragnehmerOptions();
+            }
+        }
+
+        function addMitarbeiter() {
+            const newMitarbeiter = prompt("Bitte neuen Mitarbeiter eingeben:");
+            if (newMitarbeiter) {
+                mitarbeiterList.push(newMitarbeiter);
+                updateMitarbeiterOptions();
+            }
+        }
+
+        function updateAuftraggeberOptions() {
+            const selects = document.querySelectorAll('[id^="auftraggeber_"]');
+            selects.forEach(select => {
+                select.innerHTML = auftraggeberList.map(auftraggeber => `<option value="${auftraggeber}">${auftraggeber}</option>`).join('');
+            });
+        }
+
+        function updateAuftragnehmerOptions() {
+            const selects = document.querySelectorAll('[id^="auftragnehmer_"]');
+            selects.forEach(select => {
+                select.innerHTML = auftragnehmerList.map(auftragnehmer => `<option value="${auftragnehmer}">${auftragnehmer}</option>`).join('');
+            });
+        }
+
+        function updateMitarbeiterOptions() {
+            const selects = document.querySelectorAll('[id^="mitarbeiter_"]');
+            selects.forEach(select => {
+                select.innerHTML = mitarbeiterList.map(mitarbeiter => `<option value="${mitarbeiter}">${mitarbeiter}</option>`).join('');
+            });
+        }
+
+        function submitZeiterfassungen() {
+            const submissions = zeiterfassungen.map((_, index) => ({
+                auftraggeber_id: document.getElementById(`auftraggeber${index}`).value,
+                einsatzort: document.getElementById(`einsatzort${index}`).value,
+                auftragnehmer_id: document.getElementById(`auftragnehmer${index}`).value,
+                mitarbeiter_id: document.getElementById(`mitarbeiter${index}`).value,
+                datum: document.getElementById(`datum${index}`).value,
+                zeitAnfang: document.getElementById(`zeitAnfang${index}`).value,
+                zeitEnde: document.getElementById(`zeitEnde${index}`).value,
+                einsatzID: '', // Add logic for einsatzID if needed
+                lohn: document.getElementById(`lohn${index}`).value,
+                unterschrift: document.getElementById(`unterschrift${index}`).value
+            }));
+
+            // Send submissions to the server
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(submissions)
+            })
+            .then(response => response.text())
+            .then(data => alert(data))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Zeiterfassung</h1>
+    <form id="zeiterfassungen" onsubmit="event.preventDefault(); submitZeiterfassungen();">
+        <button type="button" onclick="addZeiterfassung()">Neue Zeiterfassung hinzufügen</button>
+        <input type="submit" value="Alle Zeiterfassungen speichern">
+    </form>
+
+
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clockify Projekt</title>
+</head>
+<body>
+    <h1>Clockify Projekt</h1>
+
+    <h2>Mitarbeiter hinzufügen</h2>
+    <form action="add_mitarbeiter.php" method="POST">
+        Name: <input type="text" name="name" required><br>
+        Vorname: <input type="text" name="vorname" required><br>
+        Geburtsdatum: <input type="date" name="geburtsdatum" required><br>
+        Mitarbeiter-ID: <input type="text" name="arbeiterID" required><br>
+        Adresse: <input type="text" name="adresse" required><br>
+        Gehaltsgruppe: <input type="number" name="gehaltsgruppe" required><br>
+        Auftragnehmer-ID: <input type="number" name="nehmerID" required><br>
+        <input type="submit" value="Mitarbeiter hinzufügen">
+    </form>
+
+    <h2>Auftraggeber hinzufügen</h2>
+    <form action="add_auftraggeber.php" method="POST">
+        Firmenname: <input type="text" name="firmenname" required><br>
+        Adresse: <input type="text" name="adresse" required><br>
+        Auftraggeber-ID <input type="number" name="geberID" required><br>
+        IBAN: <input type="text" name="iban" required><br>
+        <input type="submit" value="Auftraggeber hinzufügen">
+    </form>
+
+    <h2>Auftragnehmer hinzufügen</h2>
+    <form action="add_auftragnehmer.php" method="POST">
+        Firmenname: <input type="text" name="firmenname" required><br>
+        Adresse: <input type="text" name="adresse" required><br>
+        Auftragnehmer-ID: <input type="number" name="auftraggeberID" required><br>
+        IBAN: <input type="text" name="iban" required><br>
+        <input type="submit" value="Auftragnehmer hinzufügen">
+    </form>
+
+
+</body>
+</html>
+
+</body>
+</html>

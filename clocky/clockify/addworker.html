@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <link rel="icon" type="image/x-icon" href="img/favi.svg">
+    <title>[clockify] - Neue Zeiterfassung</title>
+</head>
+
+<body>
+    <main>
+    <header>
+        <div class="h1"><a href="index.html">[clockify]</a></div>
+        <br>
+        <div class="h2">Neuer Mitarbeiter</div>
+    </header>
+    
+<div class="vertical-menu">
+
+<div class="addtime">
+<form method="POST" action="addworker.php">
+    <label for="name">Name:</label>
+    <input type="text" name="name" required>
+<hr>
+    <label for="vorname">Vorname:</label>
+    <input type="text" name="vorname" required>
+<hr>
+    <label for="geburtsdatum">Geburtsdatum:</label>
+    <input type="text" name="geburtsdatum" required>
+<hr>   
+    <label for="arbeiterID">Mitarbeiter:</label>
+    <input type="text" name="arbeiterID" required>
+<hr>     
+    <label for="gehaltsgruppe">Gehaltgruppe:</label>
+    <input type="text" name="gehaltsgruppe" required>
+<hr>     
+    <label for="nehmerID">Auftragnehmer:</label>
+    <input type="text" name="nehmerID" required>
+    
+    <input type="submit" value="Add Row">
+</form>
+</div>
+</main>
+    
+</body>
+
+</html>
